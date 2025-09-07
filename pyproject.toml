@@ -1,0 +1,14 @@
+[project]
+name = "drscrumbot"
+version = "0.0.1"
+requires-python = ">=3.13"
+license = "AGPL-3.0"
+authors = [
+  {"name" = "Salar Nosrati-Ershad", email = "salar@roverc.com"}
+]
+
+dependencies = [
+  "pydantic==2.11.7",
+  "pydantic-settings==2.10.1",
+  "uvloop==0.21.0" 
+]
