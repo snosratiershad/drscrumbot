@@ -32,6 +32,8 @@ class Config(BaseSettings):
         extra="ignore"
     )
 
+    debug: bool = Field(False, description="Debug mode")
+
     bot_token: SecretStr = Field(..., description="Telegram Bot API token")
 
     @field_validator("bot_token")

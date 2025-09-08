@@ -15,12 +15,69 @@
 """
     main module executing the application
 """
+import logging
+import sys
+
 import uvloop
+from aiogram import Bot, Dispatcher
+from aiogram.types import User
+from aiogram.client.default import DefaultBotProperties
+
 from drscrumbot.config import config
+from drscrumbot.handlers import start_router
+
+logging.basicConfig(
+    level=logging.INFO if not config.debug else logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout
+)
+logger: logging.Logger = logging.getLogger(__name__)
+
+
+async def on_startup(bot: Bot):
+    """
+        performs startup actions
+    """
+    bot_info: User = await bot.get_me()
+    logging.info(f"starting {bot_info.username}...")
+
+
+async def on_shutdown(bot: Bot):
+    """
+        performs gracefull shutdown
+
+        closes all bot sessions
+    """
+    logging.info("shutting down...")
+    await bot.session.close()
+    logging.info("shutdown completed.")
 
 
 async def main():
-    print(f"your bot token is: {config.bot_token}")
+    """
+        main function creates bot and dipatcher instance and starts polling
+    """
+    bot: Bot = Bot(
+        token=config.bot_token.get_secret_value(),
+        default=DefaultBotProperties(protect_content=True)
+    )
+
+    dp: Dispatcher = Dispatcher(disable_fsm=True)
+
+    dp.startup.register(on_startup)
+    dp.shutdown.register(on_shutdown)
+
+    dp.include_router(start_router)
+
+    logger.info("starting polling...")
+    try:
+        await dp.start_polling(
+            bot,
+            allowed_updates=["message"]
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
