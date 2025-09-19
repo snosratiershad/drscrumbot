@@ -13,10 +13,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-    handlers routing module
+    Provides base module for orm models
 """
 from typing import Any
 
-from .start import router as start_router
+from sqlalchemy.ext.declarative import declarative_base
 
-__all__: list[Any] = [start_router]
+
+# global base used to be inherited in orm models
+Base: Any = declarative_base()

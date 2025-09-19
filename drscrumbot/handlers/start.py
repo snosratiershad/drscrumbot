@@ -20,7 +20,10 @@ import logging
 
 from aiogram import Router, types
 from aiogram.filters import CommandStart
+from sqlalchemy.exc import IntegrityError
 
+from drscrumbot.database import db_connection
+from drscrumbot.database.models import User
 from drscrumbot.utils.messages import WELCOME_MESSAGE
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -38,6 +41,22 @@ async def start_handler(message: types.Message):
         # the from_user property is None probably because message is sent into
         # a channel
         return
+
+    try:
+        async with db_connection.get_session() as session:
+            user: User = User(
+                id=message.from_user.id,
+                username=message.from_user.username,
+                first_name=message.from_user.first_name,
+                last_name=message.from_user.last_name,
+                language_code=message.from_user.language_code
+            )
+            session.add(user)
+    except IntegrityError:
+        # unique constraint failed
+        # solution is db-specific so I wait for postgresql
+        pass
+
     user_fullname: str = message.from_user.full_name
 
     try:

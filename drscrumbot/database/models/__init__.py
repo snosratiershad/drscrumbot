@@ -13,10 +13,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-    handlers routing module
+    provides orm modules
 """
 from typing import Any
 
-from .start import router as start_router
+from .user import User
 
-__all__: list[Any] = [start_router]
+__all__: list[Any] = [User]
