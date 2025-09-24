@@ -30,7 +30,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 router: Router = Router()
 
 
-@router.message(CommandStart)
+@router.message(CommandStart())
 async def start_handler(message: types.Message):
     """
         handler for `/start` command

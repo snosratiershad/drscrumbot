@@ -13,11 +13,31 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-    Message templates used in responses
+   handler routing for messages to be recorded
 """
-WELCOME_MESSAGE: str = """
-    Welcome to DrScrum, {full_name}!
-"""
-NON_TEXT_MESSAGE_ERROR_MESSAGE: str = """
-    Error x-x I only understand text messages for now!
-"""
+import logging
+
+from aiogram import Router, F, types
+
+from drscrumbot.utils.messages import NON_TEXT_MESSAGE_ERROR_MESSAGE
+
+logger: logging.Logger = logging.getLogger(__name__)
+
+router: Router = Router()
+
+
+@router.message(F.text & ~F.text.startswith("/"))
+def message_handler(message: types.Message):
+    """
+        handles regular text messages
+    """
+    pass
+
+
+@router.message(~F.text)
+async def non_text_message_handler(message: types.Message):
+    """
+        handles regular non-text messages, as they're currently not supported
+    """
+    await message.reply(NON_TEXT_MESSAGE_ERROR_MESSAGE)
+    logger.info(f"non-text message type {message}")

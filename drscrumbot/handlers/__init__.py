@@ -18,5 +18,6 @@
 from typing import Any
 
 from .start import router as start_router
+from .message import router as message_router
 
-__all__: list[Any] = [start_router]
+__all__: list[Any] = [start_router, message_router]
