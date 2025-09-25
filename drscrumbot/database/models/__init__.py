@@ -18,5 +18,6 @@
 from typing import Any
 
 from .user import User
+from .message import Message
 
-__all__: list[Any] = [User]
+__all__: list[Any] = [User, Message]

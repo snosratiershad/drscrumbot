@@ -12,11 +12,11 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Add user table
+"""Add message table
 
-Revision ID: 684cae8ca49f
-Revises: -
-Create Date: 2025-09-19 20:58:05.189716
+Revision ID: 1e33f7891a86
+Revises: 684cae8ca49f
+Create Date: 2025-09-25 19:26:19.413511
 
 """
 from typing import Sequence, Union
@@ -26,8 +26,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '684cae8ca49f'
-down_revision: Union[str, Sequence[str], None] = None
+revision: str = '1e33f7891a86'
+down_revision: Union[str, Sequence[str], None] = '684cae8ca49f'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -35,19 +35,20 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     op.create_table(
-        "users",
-        sa.Column("id", sa.BigInteger, primary_key=True),
-        sa.Column("username", sa.String(255), nullable=True),
-        sa.Column("first_name", sa.String(255)),
-        sa.Column("last_name", sa.String(255), nullable=True),
-        sa.Column("language_code", sa.String(10), nullable=True),
+        "messages",
+        # That's because sqlite doesn't incrementing BigInteger
+        sa.Column("id", sa.Integer, autoincrement=True, primary_key=True),
+        sa.Column('from_user_id', sa.BigInteger()),
+        sa.Column('chat_message_id', sa.BigInteger()),
+        sa.Column('date', sa.DateTime()),
+        sa.Column('text', sa.Text()),
         sa.Column("created_at", sa.DateTime),
         sa.Column("updated_at", sa.DateTime),
-        sa.Column("is_active", sa.Boolean),
-        sa.PrimaryKeyConstraint("id")
+        sa.ForeignKeyConstraint(['from_user_id'], ['users.id']),
+        sa.PrimaryKeyConstraint('id')
     )
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_table("users")
+    op.drop_table("messages")

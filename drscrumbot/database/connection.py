@@ -18,7 +18,6 @@
     Currently uses sqlite to speed up the development and will be replaced by
     PostgreSQL on demand.
 """
-
 import logging
 
 from contextlib import asynccontextmanager

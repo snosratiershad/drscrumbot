@@ -13,36 +13,41 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-    orm models related to user domain
+    orm models related to message domain
 """
 from datetime import datetime, timezone
 
-from sqlalchemy import BigInteger, String, DateTime, Boolean
-from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy import BigInteger, Integer, DateTime, Text, ForeignKey
+from sqlalchemy.orm import mapped_column, Mapped
 
 from drscrumbot.database.models.base import Base
-from drscrumbot.database.models.message import Message
 
 
-class User(Base):
+class Message(Base):
     """
-        User model to store telegram user information
+        Message model to store telegram chat text message data
     """
-    __tablename__: str = "users"
+    __tablename__: str = "messages"
 
     id: Mapped[int] = mapped_column(
-        BigInteger,
+        # That's because sqlite doesn't incrementing BigInteger
+        Integer,
         primary_key=True,
+        autoincrement=True
     )
-    username: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    first_name: Mapped[str] = mapped_column(String(255))
-    last_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    language_code: Mapped[str | None] = mapped_column(
-        String(10),
-        nullable=True
+
+    from_user_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("users.id")
     )
-    # user contains info should be getted seperately like profile photo, bio,
-    # or etc.
+
+    # message_id of message is only promised to be unique inside the chat
+    chat_message_id: Mapped[int] = mapped_column(BigInteger)
+    date: Mapped[datetime] = mapped_column(DateTime)
+    # actually telegram message text has limited size, but it's quit large
+    # Text is better than String for now
+    text: Mapped[str] = mapped_column(Text)
+    # message contains other info that should be implemented after mvp phase
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
@@ -53,6 +58,3 @@ class User(Base):
         default=datetime.now(tz=timezone.utc),
         onupdate=datetime.now(tz=timezone.utc)
     )
-    is_active: Mapped[str | None] = mapped_column(Boolean, default=True)
-
-    messages: Mapped[list[Message]] = relationship()

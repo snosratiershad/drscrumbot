@@ -15,11 +15,11 @@
 """
    handler routing for `/start` command
 """
-
 import logging
 
-from aiogram import Router, types
-from aiogram.filters import CommandStart
+from aiogram import Router, F, types
+from aiogram.filters import CommandStart, and_f
+from aiogram.exceptions import AiogramError
 from sqlalchemy.exc import IntegrityError
 
 from drscrumbot.database import db_connection
@@ -30,18 +30,16 @@ logger: logging.Logger = logging.getLogger(__name__)
 router: Router = Router()
 
 
-@router.message(CommandStart())
-async def start_handler(message: types.Message):
+@router.message(and_f(CommandStart(), F.from_user))
+async def start_handler(message: types.Message) -> None:
     """
         handler for `/start` command
 
         replies a greeting including users full name
     """
-    if not message.from_user:
-        # the from_user property is None probably because message is sent into
-        # a channel
-        return
-
+    # As from_user is already filtered in router and is'nt None
+    # The empty from_user is probably because of messages sent in a channel
+    assert message.from_user
     try:
         async with db_connection.get_session() as session:
             user: User = User(
@@ -52,6 +50,7 @@ async def start_handler(message: types.Message):
                 language_code=message.from_user.language_code
             )
             session.add(user)
+            await session.commit()
     except IntegrityError:
         # unique constraint failed
         # solution is db-specific so I wait for postgresql
@@ -64,5 +63,5 @@ async def start_handler(message: types.Message):
             WELCOME_MESSAGE.format(full_name=user_fullname),
             reply_to_message_id=message.message_id
         )
-    except Exception as e:
+    except AiogramError as e:
         logger.error(f"error in start handler: {e}")

@@ -21,3 +21,6 @@ WELCOME_MESSAGE: str = """
 NON_TEXT_MESSAGE_ERROR_MESSAGE: str = """
     Error x-x I only understand text messages for now!
 """
+MESSAGE_RECORD_FAILED_ERROR_MESSAGE: str = """
+    Fatal x-x something is wrong with me, I couldn't record this message.
+"""
