@@ -31,7 +31,13 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["drscrumbot"]
+packages = [
+  "drscrumbot",
+  "drscrumbot.handlers",
+  "drscrumbot.databasee",
+  "drscrumbot.database.models",
+  "drscrumbot.utils"
+]
 
 [tool.alembic]
 
