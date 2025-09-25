@@ -34,7 +34,7 @@ dependencies = [
 packages = [
   "drscrumbot",
   "drscrumbot.handlers",
-  "drscrumbot.databasee",
+  "drscrumbot.database",
   "drscrumbot.database.models",
   "drscrumbot.utils"
 ]
