@@ -37,6 +37,8 @@ router: Router = Router()
 async def message_handler(message: types.Message) -> None:
     """
         handles regular text messages
+
+        records and gives like reaction to user messages
     """
     # As from_user is already filtered in router and is'nt None
     # The empty from_user is probably because of messages sent in a channel

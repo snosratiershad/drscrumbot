@@ -24,3 +24,7 @@ NON_TEXT_MESSAGE_ERROR_MESSAGE: str = """
 MESSAGE_RECORD_FAILED_ERROR_MESSAGE: str = """
     Fatal x-x something is wrong with me, I couldn't record this message.
 """
+UPDATE_MESSAGE: str = """
+    Here's your updates:
+{updates}
+"""
