@@ -34,9 +34,9 @@ router: Router = Router()
 @router.message(and_f(Command("myupdates"), F.from_user))
 async def myupdates_handler(message: types.Message) -> None:
     """
-      handler for `/start` command
+      handler for `/myupdates` command
 
-      replies a greeting including users full name
+      replies a list of updates from user messages with time
     """
     # As from_user is already filtered in router and is'nt None
     # The empty from_user is probably because of messages sent in a channel
