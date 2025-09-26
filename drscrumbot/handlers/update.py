@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-   handler routing for `/myupdates`
+   handler routing for `/update`
 """
 import logging
 
@@ -31,10 +31,10 @@ logger: logging.Logger = logging.getLogger(__name__)
 router: Router = Router()
 
 
-@router.message(and_f(Command("myupdates"), F.from_user))
-async def myupdates_handler(message: types.Message) -> None:
+@router.message(and_f(Command("update"), F.from_user))
+async def update_handler(message: types.Message) -> None:
     """
-      handler for `/myupdates` command
+      handler for `/update` command
 
       replies a list of updates from user messages with time
     """
