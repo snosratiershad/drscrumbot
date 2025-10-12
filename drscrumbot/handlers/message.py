@@ -19,7 +19,7 @@ import logging
 
 from aiogram import Router, F, types
 from aiogram.exceptions import AiogramError
-from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.exc import InvalidRequestError, DatabaseError
 
 from drscrumbot.database import db_connection
 from drscrumbot.database.models import Message
@@ -55,8 +55,9 @@ async def message_handler(message: types.Message) -> None:
             )
             session.add(message_record)
             await session.commit()
-    except InvalidRequestError as e:
-        # It's probably is because related user is not exists in db
+    except (InvalidRequestError, DatabaseError) as e:
+        #  InvalidRequestError is probably because related user is not exists
+        # in db
         logger.error(f"Error when inserting message: {e}")
         await message.reply(MESSAGE_RECORD_FAILED_ERROR_MESSAGE)
         # nothing else to do

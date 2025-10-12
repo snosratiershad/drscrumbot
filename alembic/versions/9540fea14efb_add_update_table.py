@@ -12,11 +12,11 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Add message table
+"""Add update table
 
-Revision ID: 1e33f7891a86
-Revises: 684cae8ca49f
-Create Date: 2025-09-25 19:26:19.413511
+Revision ID: 9540fea14efb
+Revises: 1e33f7891a86
+Create Date: 2025-09-27 23:13:25.623124
 
 """
 from typing import Sequence, Union
@@ -26,8 +26,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '1e33f7891a86'
-down_revision: Union[str, Sequence[str], None] = '684cae8ca49f'
+revision: str = '9540fea14efb'
+down_revision: Union[str, Sequence[str], None] = '1e33f7891a86'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -35,20 +35,25 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     op.create_table(
-        "messages",
-        # That's because sqlite doesn't incrementing BigInteger
+        "updates",
         sa.Column("id", sa.Integer, autoincrement=True, primary_key=True),
-        sa.Column('from_user_id', sa.BigInteger),
-        sa.Column('chat_message_id', sa.BigInteger),
-        sa.Column('date', sa.DateTime),
-        sa.Column('text', sa.Text),
+        sa.Column("user_id", sa.BigInteger),
+        sa.Column("text", sa.Text),
         sa.Column("created_at", sa.DateTime),
         sa.Column("updated_at", sa.DateTime),
-        sa.ForeignKeyConstraint(['from_user_id'], ['users.id']),
+        sa.ForeignKeyConstraint(['user_id'], ['users.id']),
         sa.PrimaryKeyConstraint('id')
+    )
+
+    op.create_table(
+        "update_message",
+        sa.Column("message_id", sa.Integer),
+        sa.Column("update_id", sa.Integer),
+        sa.ForeignKeyConstraint(["message_id"], ["messages.id"]),
+        sa.ForeignKeyConstraint(["update_id"], ["updates.id"])
     )
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_table("messages")
+    op.drop_table("updates")

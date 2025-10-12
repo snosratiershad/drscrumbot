@@ -18,9 +18,10 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import BigInteger, Integer, DateTime, Text, ForeignKey
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy.orm import mapped_column, relationship, Mapped
 
 from drscrumbot.database.models.base import Base
+from drscrumbot.database.models.update import update_message
 
 
 class Message(Base):
@@ -51,10 +52,16 @@ class Message(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=datetime.now(tz=timezone.utc)
+        default=lambda: datetime.now(tz=timezone.utc),
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=datetime.now(tz=timezone.utc),
-        onupdate=datetime.now(tz=timezone.utc)
+        default=lambda: datetime.now(tz=timezone.utc),
+        onupdate=lambda: datetime.now(tz=timezone.utc)
+    )
+
+    updates = relationship(
+        "Update",
+        secondary=update_message,
+        back_populates="messages",
     )
