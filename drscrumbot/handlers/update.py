@@ -25,7 +25,7 @@ from sqlalchemy.exc import DatabaseError
 
 from drscrumbot.database import db_connection
 from drscrumbot.database.models import Message, Update
-from drscrumbot.utils.messages import UPDATE_MESSAGE
+from drscrumbot.utils.messages import UPDATE_MESSAGE, NOUPDATE_MESSAGE
 
 logger: logging.Logger = logging.getLogger(__name__)
 router: Router = Router()
@@ -73,14 +73,17 @@ async def update_handler(message: types.Message) -> None:
                 lambda m: f"{m.date}: {m.text}",
                 messages
             ))
-            update: Update = Update(
-                user_id=message.from_user.id,
-                text=updates,
-                messages=messages
-            )
-            session.add(update)
-            await message.reply(UPDATE_MESSAGE.format(updates=updates))
-            await session.commit()
+            if updates:
+                update: Update = Update(
+                    user_id=message.from_user.id,
+                    text=updates,
+                    messages=messages
+                )
+                session.add(update)
+                await session.commit()
+                await message.reply(UPDATE_MESSAGE.format(updates=updates))
+            else:
+                await message.reply(NOUPDATE_MESSAGE)
 
     except (AiogramError, DatabaseError) as e:
         logger.error(f"Error on generating user update: {e}")

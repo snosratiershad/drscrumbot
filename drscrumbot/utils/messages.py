@@ -28,3 +28,6 @@ UPDATE_MESSAGE: str = """
     Here's your updates:
 {updates}
 """
+NOUPDATE_MESSAGE: str = """
+    You don't have any recent update.
+"""
