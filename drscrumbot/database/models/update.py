@@ -13,36 +13,49 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-    orm models related to user domain
+    orm models related to update domain
 """
 from datetime import datetime, timezone
 
-from sqlalchemy import BigInteger, String, DateTime, Boolean
+from sqlalchemy import (
+    BigInteger,
+    Integer,
+    DateTime,
+    Text,
+    ForeignKey,
+    Table,
+    Column
+)
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from drscrumbot.database.models.base import Base
-from drscrumbot.database.models.message import Message
 
 
-class User(Base):
+# it's an association table for many-to-many relationship
+update_message: Table = Table(
+    "update_message",
+    Base.metadata,
+    Column("message_id", ForeignKey("messages.id")),
+    Column("update_id", ForeignKey("updates.id"))
+)
+
+
+class Update(Base):
     """
-        User model to store telegram user information
+        Update model to store user's generated update report
     """
-    __tablename__: str = "users"
+    __tablename__: str = "updates"
 
     id: Mapped[int] = mapped_column(
+            Integer,
+            primary_key=True,
+            autoincrement=True
+        )
+    user_id: Mapped[int] = mapped_column(
         BigInteger,
-        primary_key=True,
+        ForeignKey("users.id")
     )
-    username: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    first_name: Mapped[str] = mapped_column(String(255))
-    last_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    language_code: Mapped[str | None] = mapped_column(
-        String(10),
-        nullable=True
-    )
-    # user contains info should be getted seperately like profile photo, bio,
-    # or etc.
+    text: Mapped[str] = mapped_column(Text)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
@@ -53,6 +66,9 @@ class User(Base):
         default=lambda: datetime.now(tz=timezone.utc),
         onupdate=lambda: datetime.now(tz=timezone.utc)
     )
-    is_active: Mapped[str | None] = mapped_column(Boolean, default=True)
 
-    messages: Mapped[list[Message]] = relationship()
+    messages = relationship(
+        "Message",
+        secondary=update_message,
+        back_populates="updates",
+    )

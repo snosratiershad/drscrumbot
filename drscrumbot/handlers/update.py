@@ -20,11 +20,11 @@ import logging
 from aiogram import Router, F, types
 from aiogram.filters import Command, and_f
 from aiogram.exceptions import AiogramError
-from sqlalchemy import select, Result
+from sqlalchemy import select, Result, Select
 from sqlalchemy.exc import DatabaseError
 
 from drscrumbot.database import db_connection
-from drscrumbot.database.models import Message
+from drscrumbot.database.models import Message, Update
 from drscrumbot.utils.messages import UPDATE_MESSAGE
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -44,15 +44,43 @@ async def update_handler(message: types.Message) -> None:
 
     try:
         async with db_connection.get_session() as session:
-            result: Result = await session.execute(
-                select(Message).
-                where(Message.from_user_id == message.from_user.id).
-                order_by(Message.date)
-            )
+            # state of update is currently simply handled by assuming user only
+            # wants update of messages later from the last update.
+            latest_update: Update | None = (await session.execute(
+                select(Update).
+                where(Update.user_id == message.from_user.id).
+                order_by(Update.created_at.desc()).
+                limit(1)
+            )).scalar_one_or_none()
+            if not latest_update:
+                stmt: Select[Message] = (
+                    select(Message).
+                    where(Message.from_user_id == message.from_user.id).
+                    order_by(Message.date)
+                )
+            else:
+                stmt: Select[Message] = (
+                    select(Message).
+                    where(Message.created_at > latest_update.created_at).
+                    where(Message.from_user_id == message.from_user.id).
+                    order_by(Message.date)
+                )
+            result: Result = await session.execute(stmt)
+            # TODO: we should limit the number of messages and handle it
+            # statefully
+            messages: list[Message] = result.scalars().all()
             updates: str = "\n".join(map(
-                lambda row: f"{row[0].date}: {row[0].text}",
-                result.all()
+                lambda m: f"{m.date}: {m.text}",
+                messages
             ))
+            update: Update = Update(
+                user_id=message.from_user.id,
+                text=updates,
+                messages=messages
+            )
+            session.add(update)
             await message.reply(UPDATE_MESSAGE.format(updates=updates))
+            await session.commit()
+
     except (AiogramError, DatabaseError) as e:
         logger.error(f"Error on generating user update: {e}")
