@@ -22,6 +22,7 @@ import uvloop
 from aiogram import Bot, Dispatcher
 from aiogram.types import User
 from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 
 from drscrumbot.config import config
 from drscrumbot.handlers import start_router, message_router, update_router
@@ -59,7 +60,10 @@ async def main():
     """
     bot: Bot = Bot(
         token=config.bot_token.get_secret_value(),
-        default=DefaultBotProperties(protect_content=True)
+        default=DefaultBotProperties(
+            protect_content=True,
+            parse_mode=ParseMode.MARKDOWN_V2
+        )
     )
 
     dp: Dispatcher = Dispatcher(disable_fsm=True)
