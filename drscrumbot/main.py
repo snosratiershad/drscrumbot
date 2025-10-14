@@ -61,7 +61,6 @@ async def main():
     bot: Bot = Bot(
         token=config.bot_token.get_secret_value(),
         default=DefaultBotProperties(
-            protect_content=True,
             parse_mode=ParseMode.MARKDOWN
         )
     )
