@@ -17,6 +17,6 @@
 """
 SUMMARY_AGENT_INSTRUCTIONS = """Use user scrum updates to summaries and report
 a single aggregated update that user will use in scrum standup event or send as
-a message to team (so you can include emojis if you want)
-The output is three segment of `last_day_i_did`, `today_i_will_do`,
-and `any_blockers`"""
+a message to team (so you can include emojis and telegram markdown v1 if you
+want). The output is three segment of `last_day_i_did`, `today_i_will_do`, and
+`any_blockers`"""
