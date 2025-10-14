@@ -21,6 +21,7 @@ import httpx
 from aiogram import Router, F, types
 from aiogram.filters import Command, and_f
 from aiogram.exceptions import AiogramError
+from aiogram.utils.chat_action import ChatActionSender
 from sqlalchemy import select, Result, Select
 from sqlalchemy.exc import DatabaseError
 from pydantic_ai.run import AgentRunResult
@@ -50,7 +51,8 @@ async def update_handler(message: types.Message) -> None:
     # As from_user is already filtered in router and is'nt None
     # The empty from_user is probably because of messages sent in a channel
     assert message.from_user
-
+    # TODO: search why it's optional
+    assert message.bot
     try:
         async with db_connection.get_session() as session:
             # state of update is currently simply handled by assuming user only
@@ -89,16 +91,20 @@ async def update_handler(message: types.Message) -> None:
                     first_name=message.from_user.first_name,
                     last_name=message.from_user.last_name
                 )
-                async with httpx.AsyncClient() as client:
-                    deps: SummaryAgentDeps = SummaryAgentDeps(
-                        http_client=client,
-                        updates=updates,
-                        user=user
-                    )
-                    result: AgentRunResult[Summary] = await summary_agent.run(
-                        deps=deps
-                    )
-                    summary: Summary = result.output
+                async with ChatActionSender(
+                    bot=message.bot,
+                    chat_id=message.chat.id,
+                ):
+                    async with httpx.AsyncClient() as client:
+                        deps: SummaryAgentDeps = SummaryAgentDeps(
+                            http_client=client,
+                            updates=updates,
+                            user=user
+                        )
+                        result: AgentRunResult[Summary] = await summary_agent.run(
+                            deps=deps
+                        )
+                        summary: Summary = result.output
                 update_text: str = UPDATE_MESSAGE.format(
                     last_day_i_did=summary.last_day_i_did,
                     today_i_will_do=summary.today_i_will_do,
