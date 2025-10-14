@@ -17,14 +17,23 @@
 """
 import logging
 
+import httpx
 from aiogram import Router, F, types
 from aiogram.filters import Command, and_f
 from aiogram.exceptions import AiogramError
 from sqlalchemy import select, Result, Select
 from sqlalchemy.exc import DatabaseError
+from pydantic_ai.run import AgentRunResult
 
 from drscrumbot.database import db_connection
 from drscrumbot.database.models import Message, Update
+from drscrumbot.agents import summary_agent
+from drscrumbot.agents.deps import SummaryAgentDeps
+from drscrumbot.schemas import (
+    User as UserSchema,
+    Update as UpdateSchema,
+    Summary
+)
 from drscrumbot.utils.messages import UPDATE_MESSAGE, NOUPDATE_MESSAGE
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -69,21 +78,43 @@ async def update_handler(message: types.Message) -> None:
             # TODO: we should limit the number of messages and handle it
             # statefully
             messages: list[Message] = result.scalars().all()
-            updates: str = "\n".join(map(
-                lambda m: f"{m.date}: {m.text}",
-                messages
-            ))
-            if updates:
+            if messages:
+                updates: list[UpdateSchema] = list(
+                    map(
+                        lambda m: UpdateSchema(text=m.text, date=m.date),
+                        messages
+                    )
+                )
+                user: UserSchema = UserSchema(
+                    first_name=message.from_user.first_name,
+                    last_name=message.from_user.last_name
+                )
+                async with httpx.AsyncClient() as client:
+                    deps: SummaryAgentDeps = SummaryAgentDeps(
+                        http_client=client,
+                        updates=updates,
+                        user=user
+                    )
+                    result: AgentRunResult[Summary] = await summary_agent.run(
+                        deps=deps
+                    )
+                    summary: Summary = result.output
+                update_text: str = UPDATE_MESSAGE.format(
+                    last_day_i_did=summary.last_day_i_did,
+                    today_i_will_do=summary.today_i_will_do,
+                    any_blockers=summary.any_blockers
+                )
+                # TODO: we should store segments as well as final message
                 update: Update = Update(
                     user_id=message.from_user.id,
-                    text=updates,
+                    text=update_text,
                     messages=messages
                 )
                 session.add(update)
                 await session.commit()
-                await message.reply(UPDATE_MESSAGE.format(updates=updates))
+                await message.reply(update_text)
             else:
                 await message.reply(NOUPDATE_MESSAGE)
 
-    except (AiogramError, DatabaseError) as e:
+    except (AiogramError, DatabaseError, httpx.HTTPError) as e:
         logger.error(f"Error on generating user update: {e}")

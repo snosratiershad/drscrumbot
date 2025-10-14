@@ -13,28 +13,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-    Message templates used in responses
+    Instructions' text used in agents
 """
-WELCOME_MESSAGE: str = """
-    Welcome to DrScrum, {full_name}!
-"""
-NON_TEXT_MESSAGE_ERROR_MESSAGE: str = """
-    Error x-x I only understand text messages for now!
-"""
-MESSAGE_RECORD_FAILED_ERROR_MESSAGE: str = """
-    Fatal x-x something is wrong with me, I couldn't record this message.
-"""
-UPDATE_MESSAGE: str = """
-    Here's your updates:
-**Last day I did**:
-{last_day_i_did}
-
-**Today I will do**:
-{today_i_will_do}
-
-**Blockers (if any)**:
-{any_blockers}
-"""
-NOUPDATE_MESSAGE: str = """
-    You don't have any recent update.
-"""
+SUMMARY_AGENT_INSTRUCTIONS = """Use user scrum updates to summaries and report
+a single aggregated update that user will use in scrum standup event or send as
+a message to team (so you can include emojis if you want)
+The output is three segment of `last_day_i_did`, `today_i_will_do`,
+and `any_blockers`"""
