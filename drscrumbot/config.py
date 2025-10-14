@@ -36,6 +36,11 @@ class Config(BaseSettings):
 
     bot_token: SecretStr = Field(..., description="Telegram Bot API token")
 
+    openai_api_key: SecretStr = Field(
+        ...,
+        description="API Key of OpenAI used in Pydantic AI agents"
+    )
+
     @field_validator("bot_token")
     @classmethod
     def validate_bot_token(cls, v: SecretStr) -> SecretStr:
@@ -49,6 +54,20 @@ class Config(BaseSettings):
         if len(v):
             return v
         raise ValueError("BOT_TOKEN cannot be empty")
+
+    @field_validator("openai_api_key")
+    @classmethod
+    def validate_openai_api_key(cls, v: SecretStr) -> SecretStr:
+        """
+            validator for OpenAI API key
+
+            removes leading and tailing whitespaces and insures that value
+            is not empty.
+        """
+        v: SecretStr = SecretStr(v.get_secret_value().strip())
+        if len(v):
+            return v
+        raise ValueError("OPENAI_API_KEY cannot be empty")
 
 
 config: Config = Config()  # it's a global instance

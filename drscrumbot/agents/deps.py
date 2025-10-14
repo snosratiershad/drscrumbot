@@ -13,28 +13,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-    Message templates used in responses
+    Agents dependancies
 """
-WELCOME_MESSAGE: str = """
-    Welcome to DrScrum, {full_name}!
-"""
-NON_TEXT_MESSAGE_ERROR_MESSAGE: str = """
-    Error x-x I only understand text messages for now!
-"""
-MESSAGE_RECORD_FAILED_ERROR_MESSAGE: str = """
-    Fatal x-x something is wrong with me, I couldn't record this message.
-"""
-UPDATE_MESSAGE: str = """
-    Here's your updates:
-**Last day I did**:
-{last_day_i_did}
+from dataclasses import dataclass
 
-**Today I will do**:
-{today_i_will_do}
+import httpx
 
-**Blockers (if any)**:
-{any_blockers}
-"""
-NOUPDATE_MESSAGE: str = """
-    You don't have any recent update.
-"""
+from drscrumbot.schemas import Update, User
+
+
+@dataclass
+class SummaryAgentDeps:
+    """
+        dependancy dataclass used by SummaryAgent
+    """
+    http_client: httpx.AsyncClient
+    updates: list[Update]
+    user: User
