@@ -27,7 +27,7 @@ from sqlalchemy.exc import DatabaseError
 from pydantic_ai.run import AgentRunResult
 
 from drscrumbot.database import db_connection
-from drscrumbot.database.models import Message, Update
+from drscrumbot.database.models import Message, Update, Clear
 from drscrumbot.agents import summary_agent
 from drscrumbot.agents.deps import SummaryAgentDeps
 from drscrumbot.schemas import (
@@ -48,7 +48,7 @@ async def update_handler(message: types.Message) -> None:
 
       replies a list of updates from user messages with time
     """
-    # As from_user is already filtered in router and is'nt None
+    # As from_user is already filtered in router and isn't None
     # The empty from_user is probably because of messages sent in a channel
     assert message.from_user
     # TODO: search why it's optional
@@ -57,13 +57,13 @@ async def update_handler(message: types.Message) -> None:
         async with db_connection.get_session() as session:
             # state of update is currently simply handled by assuming user only
             # wants update of messages later from the last update.
-            latest_update: Update | None = (await session.execute(
-                select(Update).
-                where(Update.user_id == message.from_user.id).
-                order_by(Update.created_at.desc()).
+            latest_clear: Clear | None = (await session.execute(
+                select(Clear).
+                where(Clear.user_id == message.from_user.id).
+                order_by(Clear.created_at.desc()).
                 limit(1)
             )).scalar_one_or_none()
-            if not latest_update:
+            if not latest_clear:
                 stmt: Select[Message] = (
                     select(Message).
                     where(Message.from_user_id == message.from_user.id).
@@ -72,7 +72,7 @@ async def update_handler(message: types.Message) -> None:
             else:
                 stmt: Select[Message] = (
                     select(Message).
-                    where(Message.created_at > latest_update.created_at).
+                    where(Message.created_at > latest_clear.created_at).
                     where(Message.from_user_id == message.from_user.id).
                     order_by(Message.date)
                 )
@@ -101,9 +101,10 @@ async def update_handler(message: types.Message) -> None:
                             updates=updates,
                             user=user
                         )
-                        result: AgentRunResult[Summary] = await summary_agent.run(
-                            deps=deps
-                        )
+                        result: AgentRunResult[Summary] = await summary_agent.\
+                            run(
+                                deps=deps
+                            )
                         summary: Summary = result.output
                 update_text: str = UPDATE_MESSAGE.format(
                     last_day_i_did=summary.last_day_i_did,
@@ -116,7 +117,11 @@ async def update_handler(message: types.Message) -> None:
                     text=update_text,
                     messages=messages
                 )
+                clear: Clear = Clear(
+                    user_id=message.from_user.id,
+                )
                 session.add(update)
+                session.add(clear)
                 await session.commit()
                 await message.reply(update_text)
             else:

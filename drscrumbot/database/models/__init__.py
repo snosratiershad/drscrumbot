@@ -20,5 +20,6 @@ from typing import Any
 from .user import User
 from .message import Message
 from .update import Update
+from .clear import Clear
 
-__all__: list[Any] = [User, Message, Update]
+__all__: list[Any] = [User, Message, Update, Clear]

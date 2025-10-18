@@ -38,3 +38,6 @@ UPDATE_MESSAGE: str = """
 NOUPDATE_MESSAGE: str = """
     You don't have any recent update.
 """
+CLEAR_MESSAGE: str = """
+    Current session cleared.
+"""
