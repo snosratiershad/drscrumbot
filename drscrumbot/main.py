@@ -25,7 +25,12 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 from drscrumbot.config import config
-from drscrumbot.handlers import start_router, message_router, update_router
+from drscrumbot.handlers import (
+    start_router,
+    message_router,
+    update_router,
+    clear_router
+)
 
 logging.basicConfig(
     level=logging.INFO if not config.debug else logging.DEBUG,
@@ -73,6 +78,7 @@ async def main():
     dp.include_router(start_router)
     dp.include_router(message_router)
     dp.include_router(update_router)
+    dp.include_router(clear_router)
 
     logger.info("starting polling...")
     try:

@@ -13,18 +13,27 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-    handlers routing module
+    orm models related to clearing domain
 """
-from typing import Any
+from datetime import datetime, timezone
 
-from .start import router as start_router
-from .message import router as message_router
-from .update import router as update_router
-from .clear import router as clear_router
+from sqlalchemy import BigInteger, ForeignKey, DateTime
+from sqlalchemy.orm import mapped_column, Mapped
 
-__all__: list[Any] = [
-    start_router,
-    message_router,
-    update_router,
-    clear_router
-]
+from drscrumbot.database.models.base import Base
+
+
+class Clear(Base):
+    """
+        Clear model to store when user cleared the session
+    """
+    __tablename__: str = "clears"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("users.id")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=lambda: datetime.now(tz=timezone.utc)
+    )
