@@ -111,7 +111,6 @@ async def update_handler(message: types.Message) -> None:
                     today_i_will_do=summary.today_i_will_do,
                     any_blockers=summary.any_blockers
                 )
-                # TODO: we should store segments as well as final message
                 update: Update = Update(
                     user_id=message.from_user.id,
                     text=update_text,
