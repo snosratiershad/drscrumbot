@@ -115,6 +115,9 @@ async def update_handler(message: types.Message) -> None:
                 update: Update = Update(
                     user_id=message.from_user.id,
                     text=update_text,
+                    last_day_i_did=summary.last_day_i_did,
+                    today_i_will_do=summary.today_i_will_do,
+                    any_blockers=summary.any_blockers,
                     messages=messages
                 )
                 clear: Clear = Clear(
