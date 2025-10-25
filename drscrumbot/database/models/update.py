@@ -57,6 +57,10 @@ class Update(Base):
     )
     text: Mapped[str] = mapped_column(Text)
 
+    last_day_i_did: Mapped[str] = mapped_column(Text)
+    today_i_will_do: Mapped[str] = mapped_column(Text)
+    any_blockers: Mapped[str] = mapped_column(Text)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=lambda: datetime.now(tz=timezone.utc)
