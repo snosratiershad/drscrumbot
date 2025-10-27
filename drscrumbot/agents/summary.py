@@ -15,15 +15,22 @@
 """
     Agents related to summarization
 """
+import logging
+
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
+from sqlalchemy import select
+from sqlalchemy.exc import DatabaseError
 
 from drscrumbot.config import config
 from drscrumbot.schemas import Summary
 from drscrumbot.agents.deps import SummaryAgentDeps
+from drscrumbot.database.connection import db_connection
+from drscrumbot.database.models import Update
 from drscrumbot.utils.instructions import SUMMARY_AGENT_INSTRUCTIONS
 
+logger: logging.Logger = logging.getLogger(__name__)
 model: OpenAIChatModel = OpenAIChatModel(
     model_name="gpt-5-nano",
     provider=OpenAIProvider(api_key=config.openai_api_key.get_secret_value())
@@ -52,3 +59,22 @@ def add_updates_info(ctx: RunContext[SummaryAgentDeps]) -> str:
     return "updates: \n" + "\n".join(
         list(map(lambda u: f"{u.date} - {u.text}", ctx.deps.updates))
     )
+
+
+@agent.instructions
+async def add_last_update_report(ctx: RunContext[SummaryAgentDeps]) -> str:
+    try:
+        async with db_connection.get_session() as session:
+            latest_update: Update | None = (await session.execute(
+                select(Update).
+                where(Update.user_id == ctx.deps.user.telegram_id).
+                order_by(Update.created_at.desc()).
+                limit(1)
+            )).scalar_one_or_none()
+            if latest_update:
+                return f"last update:\n{latest_update.text}"
+            else:
+                return "last update: No recent update"
+    except DatabaseError as e:
+        logger.error(f"Failed when fetching recent update: {e}")
+        return "last: No recent update"

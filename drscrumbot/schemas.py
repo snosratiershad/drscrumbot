@@ -32,6 +32,7 @@ class User(BaseModel):
     """
         User personal info schema used in domain
     """
+    telegram_id: int
     first_name: str
     last_name: str | None
 
