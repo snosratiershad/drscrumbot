@@ -88,6 +88,7 @@ async def update_handler(message: types.Message) -> None:
                     )
                 )
                 user: UserSchema = UserSchema(
+                    telegram_id=message.from_user.id,
                     first_name=message.from_user.first_name,
                     last_name=message.from_user.last_name
                 )
